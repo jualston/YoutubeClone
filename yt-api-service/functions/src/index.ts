@@ -19,6 +19,17 @@ initializeApp();
 const firestore= new Firestore();
 const storage = new Storage();
 
+const videoCollectionId = "videos";
+
+export interface Video {
+  id?: string,
+  uid?: string,
+  filename?: string,
+  status?: "processing" | "processed",
+  title?: string,
+  description?: string
+}
+
 const rawVideoBucketName = "julz-raw-movies";
 
 export const createUser= functions.auth.user().onCreate((user)=>{
@@ -55,6 +66,12 @@ export const generateUploadUrl= onCall({maxInstances: 1}, async (request)=>{
     expires: Date.now()+ 15*60*1000, // 15 minutes
   });
   return {url, fileName};
+});
+
+export const getVideos = onCall({maxInstances: 1}, async () => {
+  const querySnapshot =
+    await firestore.collection(videoCollectionId).limit(10).get();
+  return querySnapshot.docs.map((doc) => doc.data());
 });
 // Start writing functions
 // https://firebase.google.com/docs/functions/typescript
